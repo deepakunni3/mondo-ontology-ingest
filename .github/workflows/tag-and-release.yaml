@@ -1,0 +1,48 @@
+name: Tag and release
+on:
+  schedule:
+    - cron: '59 11 1 * *'
+  workflow_dispatch:
+    inputs:
+      custom_tag:
+        description: 'Custom tag'
+        required: false
+        default: ''
+jobs:
+
+  tag-and-release:
+    name: Create a new release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set release version
+        id: version
+        run: |
+          if ${{ github.event.inputs.custom_tag != '' }}; then
+            echo "::set-output name=version::${{ github.event.inputs.custom_tag }}"
+          else
+            echo "::set-output name=version::v$(echo $(date +'%Y-%m-%d'))"
+          fi
+
+      - name: Push release tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          custom_tag: ${{ steps.version.outputs.version }}
+          tag_prefix: ''
+
+      - name: Clone repository
+        uses: actions/checkout@v3
+
+      - name: Build artifacts
+        run: |
+          echo "make all"
+
+      - name: Create a GitHub release
+        uses: ncipollo/release-action@v1
+        with:
+          #artifacts: "file1,file2"
+          tag: ${{ steps.tag_version.outputs.new_tag }}
+          name: ${{ steps.tag_version.outputs.new_tag }} release 
+          body: ${{ steps.tag_version.outputs.changelog }}
+          token: ${{ secrets.GITHUB_TOKEN }}
