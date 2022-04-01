@@ -7,7 +7,7 @@ ROBOT_JAR_URL=https://github.com/ontodev/robot/releases/download/${ROBOT_VERSION
 ROBOT_SH_URL=https://raw.githubusercontent.com/ontodev/robot/${ROBOT_VERSION}/bin/robot
 JAVA_ARGS=-Xmx20G
 OBO_PURL=http://purl.obolibrary.org/obo
-DIRS = "sources preparation metrics"
+DIRS = (sources preparation metrics)
 
 help:
 	echo "Run 'make all' to execute the data pipeline. \
@@ -27,5 +27,8 @@ dirs:
 	for d in ${DIRS}; do
 		mkdir ${d}
 	done
+
+build:
+	sh odk.sh make all
 
 all: help
